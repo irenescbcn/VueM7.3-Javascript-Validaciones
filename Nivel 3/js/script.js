@@ -1,3 +1,40 @@
+//REGEX FUNCTIONS
+regex = {
+    word: /^[a-z]{3,}$/i,
+    user: /^\w{3,}$/,
+    zip: /^\d{4,8}$/,
+    email: /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/,
+    pass: /^(?=[a-zA-Z]*\d)(?=[a-z0-9]*[A-Z])(?=[A-Z0-9]*[a-z])\S{8,}$/,
+}
+
+message = {
+    required: "Este campo es obligatorio",
+    conditions: "El texto ha de contener mínimo 3 carácteres",
+    failSearch: "No se encontró nada con estos términos de búsqueda",
+    userCondition: "Debe contener mínimo 3 carácteres que pueden ser letras, números o guión bajo",
+    cityCondition: "Debe contener mínimo 3 letras",
+    zipCondition: "Debe contener entre 4 y 8 dígitos",
+    noRegister: "No consta registrado. Primero debe registrarse.",
+    emailFormat: "El email no cumple el formato",
+    passFormat: "Debe contener mínimo 8 carácteres, entre los cuales, mínimo uno ha de ser mayúscula y otro un número.",
+    errorPass: "La contraseña no es correcta.",
+    emptyField: "",
+}
+
+function Validate(type, value)
+{
+    var reg; 
+    switch (type){
+        case "word": reg = regex.word; break;
+        case "user": reg = regex.user; break;
+        case "zip": reg = regex.zip; break;
+        case "email": reg = regex.email; break;
+        case "pass": reg = regex.pass; break;     
+    }
+    return reg.test(value) ? true : false
+}
+
+
 //-------------------------------- SEARCH FORM --------------------------------
 
 let inputSearch= document.getElementById("inputSearch");
@@ -7,26 +44,21 @@ let searchResult = document.getElementById("searchResult");
 let searchOptions = ["Álbums", "Collages", "Fotos", "Cuadros"];
 
 
-function validateSearch(text) {
-	var regex = /^[a-z]{3,}$/ig;
-	return regex.test(text) ? true : false;
+function GetClass(value){
+    inputSearch.classList.add("is-invalid");
+    searchResult.classList.remove("correct");
+    searchResult.classList.remove("d-none");
+    searchResult.textContent = value;
 }
-
 
 function search(){
     let userText = inputSearch.value.toLowerCase();
     let result = "";
 
     if(userText == "") {
-		inputSearch.classList.add("is-invalid");
-        searchResult.classList.remove("correct");
-        searchResult.classList.remove("d-none");
-        document.getElementById("searchResult").textContent = "Es campo es obligatorio";
-    }else if (!validateSearch(userText)){
-        inputSearch.classList.add("is-invalid");
-        searchResult.classList.remove("correct");
-        searchResult.classList.remove("d-none");
-		document.getElementById("searchResult").textContent = "El texto ha de contener mínimo 3 carácteres";
+		GetClass(message.required);
+    }else if (!Validate("word", userText)){
+        GetClass(message.conditions);
     }else{
         inputSearch.classList.remove("is-invalid");
         document.getElementById("searchResult").textContent = "";
@@ -34,18 +66,14 @@ function search(){
             let option = searchOptions[i].toLowerCase();
             if (option.indexOf(userText) !== -1){
                 result += searchOptions[i];
+                GetClass(result);
+                inputSearch.classList.remove("is-invalid")
                 inputSearch.classList.add("is-valid");
-                inputSearch.classList.remove("is-invalid");
-                searchResult.classList.remove("d-none");
-                document.getElementById("searchResult").innerHTML = result;
                 searchResult.classList.add("correct");
             }
         }
         if(result === ""){
-            inputSearch.classList.add("is-invalid");
-            searchResult.classList.remove("d-none");
-            searchResult.classList.remove("correct");
-            searchResult.innerHTML = "No se encontró nada con estos términos de búsqueda";
+            GetClass(message.failSearch);
         }
     }
       
@@ -53,8 +81,6 @@ function search(){
 
 
 inputSearch.addEventListener("keyup", search);
-
-
 
 
 
@@ -81,31 +107,44 @@ function inputValidate(field, inputName){
     }
 }
 
+function fieldValidate(inputField){
+    while(fieldForms == true){
+        inputField = true;
+        break;
+    }
+    return inputField;
+}
+
+
 function password2InputValidate(){
     let registerPassword1 = password.value;
     let registerPassword2 = password2.value;
 
     if(registerPassword1 !== registerPassword2){
         password2.classList.add("is-invalid");
-        document.getElementById("errorPassword2").textContent = "Ambas contraseñas deben ser iguales";
+        errorPassword2.textContent = "Ambas contraseñas deben ser iguales";
          
     }else{
         password2.classList.add("is-valid");
         password2.classList.remove("is-invalid");
-        document.getElementById("errorPassword2").textContent = "";
+        errorPassword2.textContent = "";
         password2Field=true;
     }
 }
 
 
+function getClassRegistration(idInput, idDiv, value){
+    idInput.classList.add("is-invalid");
+    idDiv.textContent = value;
+}
+
+
 
 //--------------- LOGIN ---------------
-
 let correctorEmail = false;
-let correctorPassword= false;
+let correctorPassword = false;
 
 function loginValidate() {
-
 	loginForm.classList.remove('is-invalid');
 	
 	var emailLogin = document.forms["loginForm"]["emailLogin"];
@@ -113,39 +152,24 @@ function loginValidate() {
 	var passwordLogin = document.forms["loginForm"]["passwordLogin"];
 
     //VALIDATE EMAIL WHEN LOGIN
-	if(emailLogin.value == "") {
-		emailLogin.classList.add("is-invalid");
-		document.getElementById("errorEmailLogin").textContent = "Este campo es obligatorio";
-        
-    }else if(!validateEmail(emailLogin.value)){
-		emailLogin.classList.add("is-invalid");
-		document.getElementById("errorEmailLogin").textContent = "El email no cumple el formato";
-		
-	}else{
+	if(emailLogin.value == "") getClassRegistration(emailLogin, errorEmailLogin, message.required);
+    else if(!Validate("email", emailLogin.value)) getClassRegistration(emailLogin, errorEmailLogin, message.emailFormat);
+    else{
         if(arrayEmails.length !== 0){
             for(let i=0; i<arrayEmails.length; i++){
                 if(emailLogin.value == arrayEmails[i]){
                     emailLogin.classList.add("is-valid");
                     emailLogin.classList.remove("is-invalid");
-                    document.getElementById("errorEmailLogin").textContent = "";
+                    errorEmailLogin.textContent = "";
                     correctorEmail = true;
-                }else{
-                    emailLogin.classList.add("is-invalid");
-                    document.getElementById("errorEmailLogin").textContent = "No consta registrado. Primero debe registrarse."
-                    
-                }
+                }else getClassRegistration(emailLogin, errorEmailLogin, message.noRegister);
             }
-        }else{
-            emailLogin.classList.add("is-invalid");
-            document.getElementById("errorEmailLogin").textContent = "No consta registrado. Primero debe registrarse.";
-            
-        }
+        }else getClassRegistration(emailLogin, errorEmailLogin, message.noRegister); 
     }
     
     //VALIDATE PASSWORD WHEN LOGIN
     if(passwordLogin.value == "") {
-		passwordLogin.classList.add("is-invalid");
-		document.getElementById("errorPasswordLogin").textContent = "Este campo es obligatorio";
+        getClassRegistration(passwordLogin, errorPasswordLogin, message.required)
 		acumErrores ++;
 	}else{
         if(arrayPasswords.length !== 0){
@@ -153,13 +177,9 @@ function loginValidate() {
                 if(passwordLogin.value == arrayPasswords[i]){
                     passwordLogin.classList.add("is-valid");
                     passwordLogin.classList.remove("is-invalid");
-                    document.getElementById("errorPasswordLogin").textContent = "";
+                    errorPasswordLogin.textContent = "";
                     correctorPassword=true;
-                }else{
-                    passwordLogin.classList.add("is-invalid");
-                    document.getElementById("errorPasswordLogin").textContent = "La contraseña no es correcta."
-                          
-                }
+                }else getClassRegistration(passwordLogin, errorPasswordLogin, message.errorPass)
             }
         }
     }
@@ -190,87 +210,81 @@ let emailField = false;
 let passwordField = false;
 let password2Field = false;
 
+
 //VALIDATE REGISTRATION FUNCTION 
 function validateRegistration(e){
     switch(e.target.name){
         case "user":
             inputValidate(user, "errorUser");
-            while(fieldForms == true){
-                userField = true;
-                break;
+            if (user.value !== ""){
+                if(!Validate ("user", user.value)){
+                    getClassRegistration(user, errorUser, message.userCondition);
+                    fieldForms=false;
+                } 
             }
+            userField = fieldValidate(userField);
         break;
+
         case "province":
             inputValidate(province, "errorProvince");
-            while(fieldForms == true){
-                provinceField = true;
-                break;
-            }
+            provinceField = fieldValidate(provinceField);
         break;
+
         case "city":
             inputValidate(city, "errorCity");
-            while(fieldForms == true){
-                cityField = true;
-                break;
+            if (city.value !== ""){
+                if(!Validate("word", city.value)){
+                    getClassRegistration(city, errorCity, message.cityCondition)
+                    fieldForms=false;
+                }
             }
+            cityField = fieldValidate(cityField);
         break;
+
         case "zip":
             inputValidate(zip, "errorZip");
-            while(fieldForms == true){
-                zipField = true;
-                break;
+            if (zip.value !== ""){
+                if(!Validate("zip", zip.value)){
+                    getClassRegistration(zip, errorZip, message.zipCondition);
+                    fieldForms=false;
+                }
             }
+            zipField = fieldValidate(zipField);
         break;
+
         case "email":
             inputValidate(email, "errorEmailRegister");
-            
-            if(!validateEmail(email.value)){
-                email.classList.add("is-invalid");
-                document.getElementById("errorEmailRegister").textContent = "El email no cumple el formato";  
-                fieldForms=false;
+            if  (email.value !== ""){
+                if(!Validate("email", email.value)){
+                    getClassRegistration(email, errorEmailRegister, message.emailFormat); 
+                    fieldForms=false;
+                }
             }
             for(let i=0; i<arrayEmails.length; i++){
                 if(email.value == arrayEmails[i]){
-                    document.getElementById("errorEmailRegister").textContent = "Este email ya consta en nuestra base de datos."
+                    email.classList.add("is-invalid");
+                    errorEmailRegister.textContent = "Este email ya consta en nuestra base de datos."
                 }
             }
-            while(fieldForms == true){
-                emailField = true;
-                break;
-            }
+            emailField = fieldValidate(emailField);
         break;
+        
         case "password":
             inputValidate(password, "errorPassword");
-            if(!validatePassword(password.value)){
-                password.classList.add("is-invalid");
-                document.getElementById("errorPassword").textContent = "Debe contener mínimo 8 carácteres, entre los cuales, mínimo uno ha de ser mayúscula y otro un número.";
-                fieldForms=false;
+            if (password.value !== ""){
+                if(!Validate("pass", password.value)){
+                    getClassRegistration(password, errorPassword, message.passFormat)
+                    fieldForms=false;
+                }
             }
-            
-            while(fieldForms == true){
-                passwordField = true;
-                break;
-            }
+            passwordField = fieldValidate(passwordField);
             password2InputValidate();
         break; 
+
         case "password2":
             password2InputValidate();
-            
         break;
     }
-}
-
-
-
-//REGEX FUNCTIONS
-function validateEmail(email){
-    var regex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-	return regex.test(email) ? true : false;
-}
-
-function validatePassword(password){
-    var regexPass = /^(?=[a-zA-Z]*\d)(?=[a-z0-9]*[A-Z])(?=[A-Z0-9]*[a-z])\S{8,}$/;
-    return regexPass.test(password) ? true : false;
 }
 
 
@@ -288,12 +302,10 @@ loginForm.addEventListener('submit', (event) => {
 
 
 inputsRegister.forEach((input) => {
-    // input.addEventListener("keyup", validateRegistration);
     input.addEventListener("blur", validateRegistration);
 });
 
 selectRegister.forEach((input) => {
-    // input.addEventListener("keyup", validateRegistration);
     input.addEventListener("blur", validateRegistration);
 });
 
@@ -302,19 +314,19 @@ registerForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
     if(userField && provinceField && cityField && zipField && emailField && passwordField && password2Field){
-        document.getElementById("errorRegister").innerHTML= "";
+        errorRegister.innerHTML= "";
         
         arrayEmails.push(email.value);
         arrayPasswords.push(password.value)
         console.log(arrayEmails);
         console.log(arrayPasswords);
         
-        document.getElementById("nameResultModal").innerHTML= "Nombre de usuario: " + inputUser.value;
-        document.getElementById("provinceResultModal").innerHTML= "Provincia: " + inputProvince.value;
-        document.getElementById("cityResultModal").innerHTML= "Ciudad: " + inputCity.value;
-        document.getElementById("zipResultModal").innerHTML= "Código Postal: " + inputZip.value;
-        document.getElementById("emailResultModal").innerHTML= "Email: " + inputEmail.value;
-        document.getElementById("passwordResultModal").innerHTML= "Contraseña: " + inputPassword.value;
+        nameResultModal.innerHTML= "Nombre de usuario: " + inputUser.value;
+        provinceResultModal.innerHTML= "Provincia: " + inputProvince.value;
+        cityResultModal.innerHTML= "Ciudad: " + inputCity.value;
+        zipResultModal.innerHTML= "Código Postal: " + inputZip.value;
+        emailResultModal.innerHTML= "Email: " + inputEmail.value;
+        passwordResultModal.innerHTML= "Contraseña: " + inputPassword.value;
         
         $("#firstModal").click(() =>{          
             $('#loginRegisterModal').modal('hide');
@@ -331,7 +343,7 @@ registerForm.addEventListener("submit", (e) => {
         $("#secondModalBtn").click();
         
     }else{
-        document.getElementById("errorRegister").innerHTML= "Todos los campos deben estar rellenados correctamente."
+        errorRegister.innerHTML= "Todos los campos deben estar rellenados correctamente."
     }
 });
 
