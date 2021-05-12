@@ -133,10 +133,26 @@ function password2InputValidate(){
 }
 
 
+function getClassLogin (arrays, idInput, idDivError, check, text){
+    if(arrays.length !== 0){
+        for(let i=0; i<arrays.length; i++){
+            if(idInput.value == arrays[i]){
+                idInput.classList.add("is-valid");
+                idInput.classList.remove("is-invalid");
+                idDivError.textContent = "";
+                check = true;
+            }else getClassRegistration(idInput, idDivError, text);
+        }
+    }else getClassRegistration(idInput, idDivError, text);
+    return check;
+}
+
+
 function getClassRegistration(idInput, idDiv, value){
     idInput.classList.add("is-invalid");
     idDiv.textContent = value;
 }
+
 
 
 
@@ -154,35 +170,15 @@ function loginValidate() {
     //VALIDATE EMAIL WHEN LOGIN
 	if(emailLogin.value == "") getClassRegistration(emailLogin, errorEmailLogin, message.required);
     else if(!Validate("email", emailLogin.value)) getClassRegistration(emailLogin, errorEmailLogin, message.emailFormat);
-    else{
-        if(arrayEmails.length !== 0){
-            for(let i=0; i<arrayEmails.length; i++){
-                if(emailLogin.value == arrayEmails[i]){
-                    emailLogin.classList.add("is-valid");
-                    emailLogin.classList.remove("is-invalid");
-                    errorEmailLogin.textContent = "";
-                    correctorEmail = true;
-                }else getClassRegistration(emailLogin, errorEmailLogin, message.noRegister);
-            }
-        }else getClassRegistration(emailLogin, errorEmailLogin, message.noRegister); 
-    }
-    
+    else getClassLogin(arrayEmails, emailLogin, errorEmailLogin, correctorEmail, message.noRegister);
+        
     //VALIDATE PASSWORD WHEN LOGIN
     if(passwordLogin.value == "") {
         getClassRegistration(passwordLogin, errorPasswordLogin, message.required)
 		acumErrores ++;
-	}else{
-        if(arrayPasswords.length !== 0){
-            for(let i=0; i<arrayPasswords.length; i++){
-                if(passwordLogin.value == arrayPasswords[i]){
-                    passwordLogin.classList.add("is-valid");
-                    passwordLogin.classList.remove("is-invalid");
-                    errorPasswordLogin.textContent = "";
-                    correctorPassword=true;
-                }else getClassRegistration(passwordLogin, errorPasswordLogin, message.errorPass)
-            }
-        }
-    }
+	}else getClassLogin(arrayPasswords, passwordLogin, errorPasswordLogin, correctorPassword, message.errorPass);
+        
+    
 }
 
 
@@ -294,7 +290,7 @@ loginForm.addEventListener('submit', (event) => {
     event.preventDefault();
 	console.log(event);
 
-    if(correctorEmail && correctorPassword){
+    if(getClassLogin(arrayPasswords, passwordLogin, errorPasswordLogin, correctorPassword, message.errorPass) && getClassLogin(arrayPasswords, passwordLogin, errorPasswordLogin, correctorPassword, message.errorPass)){
         $('#loginRegisterModal').modal('hide');
     }
     
